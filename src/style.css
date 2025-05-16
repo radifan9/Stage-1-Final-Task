@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+.tech-stack-slider .swiper-wrapper {
+  transition-timing-function: linear !important;
+  will-change: transform;
+}
+
+.tech-stack-slider .swiper-slide {
+  width: auto; /* Let slides take their natural width */
+  transition: transform 0.3s ease;
+}
 /* BAWAAN VITE */
 /* 
 :root {
