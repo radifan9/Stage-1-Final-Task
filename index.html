@@ -72,11 +72,11 @@
 
       <main class="max-w-7xl px-4 mx-auto">
         <!-- Hero Section -->
-        <div class="flex px-6 py-12 gap-6">
+        <div class="flex px-6 py-12 gap-6 mb-16">
           <!-- Left Content - Foto Profil -->
           <div class="lg:w-1/3">
             <img
-              class="w-64 h-64 lg:w-[320px] lg:h-[320px] rounded-xl object-cover shadow-lg"
+              class="w-64 h-64 lg:w-[320px] lg:h-[320px] rounded-xl object-cover shadow-lg/50 shadow-purple-600"
               src="./src/images/profile.jpg"
               alt="Foto Mas Surya"
             />
@@ -99,35 +99,34 @@
               frontend and backend development, I handle everything from initial
               concept to deployment and maintenance.
             </p>
-            <div class="flex items-center gap-1">
-              <span
-                ><svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="size-6"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
-                  />
-                </svg>
-              </span>
+            <div class="flex items-center gap-1 text-gray-500">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-6"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                />
+              </svg>
+
               <span>Depok, Sawangan, Indonesia</span>
             </div>
             <div class="flex items-center gap-2">
               <span
                 class="inline-block w-2 h-2 bg-green-500 rounded-full"
               ></span>
-              <span>Available for new projects</span>
+              <span class="text-gray-500">Available for new projects</span>
             </div>
             <div>
               <!-- Call to Action -->
@@ -170,7 +169,10 @@
         </div>
 
         <!-- Tech slide -->
-        <div class="relative overflow-hidden w-full my-12">
+        <h2 class="text-2xl font-bold mb-12">
+          Tech Stack - Tools I Use Everyday
+        </h2>
+        <div class="relative overflow-hidden w-full mb-32">
           <div class="swiper tech-stack-slider w-full h-32">
             <div class="swiper-wrapper items-center">
               <!-- Slide 1 -->
