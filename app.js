@@ -3,10 +3,8 @@ import express from "express";
 import { Pool } from "pg";
 import hbs from "hbs";
 import path from "path";
-import { fileURLToPath } from "url";
-import Swiper from "swiper/bundle";
-import { title } from "process";
 import TECH_STACKS from "./src/data/techstacks.js";
+import { fileURLToPath } from "url";
 
 // 2. Constants and Configuration
 const CONFIG = {
@@ -23,11 +21,15 @@ const CONFIG = {
 // 3. App setup
 const app = express();
 const db = new Pool(CONFIG.database);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // 4. Middleware Setup
 app.set("view engine", "hbs");
 app.set("views", "src/views");
 app.use("/assets", express.static("src/assets"));
+app.use("/swiper", express.static("node_modules/swiper"));
+hbs.registerPartials(path.join(__dirname, "src/views/partials"));
 
 // 5. Handlebars
 

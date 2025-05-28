@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @import "swiper/css";
 
+body {
+  font-family: "Poppins";
+}
+
+/* SWIPER CSS & TECH STACK */
 .swiper {
   overflow: hidden;
   position: relative;
