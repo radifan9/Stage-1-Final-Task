@@ -1,0 +1,29 @@
+{
+  "name": "task-stage-1-final-database",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "build": "postcss src/assets/css/styles.css -o src/assets/css/dist/styles.css",
+    "watch": "postcss src/assets/css/styles.css -o src/assets/css/dist/styles.css --watch",
+    "dev": "concurrently \"npm:watch\" \"nodemon --ext js,hbs app.js\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.1.7",
+    "express": "^5.1.0",
+    "hbs": "^4.2.0",
+    "pg": "^8.16.0",
+    "postcss": "^8.5.3",
+    "postcss-cli": "^11.0.1",
+    "swiper": "^11.2.8",
+    "tailwindcss": "^4.1.7"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "nodemon": "^3.1.10"
+  }
+}

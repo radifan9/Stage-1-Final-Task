@@ -1,0 +1,41 @@
+@import "tailwindcss";
+@import "swiper/css";
+
+.swiper {
+  overflow: hidden;
+  position: relative;
+}
+
+.swiper-wrapper {
+  transition-timing-function: linear !important;
+}
+
+/* Add gradient masks */
+.swiper::before,
+.swiper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 15%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.swiper::before {
+  left: 0;
+  background: linear-gradient(
+    to right,
+    rgb(255, 255, 255) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+.swiper::after {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    rgb(255, 255, 255) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}

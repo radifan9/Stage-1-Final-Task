@@ -1,0 +1,9 @@
+{
+  "tailwindCSS.includeLanguages": {
+    "handlebars": "html",
+    "hbs": "html"
+  },
+  "editor.quickSuggestions": {
+    "strings": true
+  }
+}
