@@ -39,16 +39,13 @@ hbs.registerPartials(path.join(__dirname, "src/views/partials"));
 // 6. Utility functions
 
 function getTechStacks(techStacksDB) {
-  return TECH_STACKS.reduce((acc, currTech) => {
-    const dbTech = techStacksDB.find(
-      // If tech in database ===  current TECH constant, return that element otherwise undefined
-      (dbTech) => dbTech.title === currTech.title
+  const techStacksAndImg = techStacksDB.map((techStackDB) => {
+    const { title, img } = TECH_STACKS.find(
+      (tech) => tech.title === techStackDB.title
     );
-    if (dbTech) {
-      acc[currTech.title] = { ...dbTech, imgSrc: currTech.imgSrc };
-    }
-    return acc;
-  }, {});
+    return { title, img };
+  });
+  return techStacksAndImg;
 }
 
 function formatWorkExperiences(workExperiences) {
@@ -65,13 +62,16 @@ function formatWorkExperiences(workExperiences) {
     const formattedStart = dateFormatter.format(start);
     const formattedEnd = dateFormatter.format(end);
 
-    const logo = PLACE_LOGO.find((logo) => logo.name === workExperience.place);
+    // Replace place (just named)
+    const placeNameAndImg = PLACE_LOGO.find(
+      (logo) => logo.name === workExperience.place
+    );
 
     return {
       role: workExperience.role,
       start: formattedStart,
       end: formattedEnd === "Jan 1970" ? "Present" : formattedEnd,
-      place: logo,
+      place: placeNameAndImg,
       responsibilities: workExperience.responsibilities,
       techUsed: workExperience.tech_used,
     };
