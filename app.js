@@ -3,10 +3,10 @@ import express from "express";
 import { Pool } from "pg";
 import hbs from "hbs";
 import path from "path";
-import moment from "moment";
 import { fileURLToPath } from "url";
 import TECH_STACKS from "./src/data/techstacks.js";
 import PLACE_LOGO from "./src/data/placeLogo.js";
+import PROJECT_IMAGE from "./src/data/projectDemo.js";
 import { CLIENT_RENEG_LIMIT } from "tls";
 
 // 2. Constants and Configuration
@@ -80,6 +80,27 @@ function formatWorkExperiences(workExperiences) {
   return formattedWorkExperiences;
 }
 
+function formatProjects(projectsDB) {
+  const formattedProjects = projectsDB.map((project) => {
+    const titleAndImg = PROJECT_IMAGE.find(
+      (demo) => demo.title === project.title
+    );
+
+    return {
+      title: project.title,
+      img: titleAndImg
+        ? titleAndImg.img
+        : `https://picsum.photos/seed/${project.id}/300/200`,
+      description: project.description,
+      techUsed: project.tech_used,
+      githubRepo: project.github_repo,
+      liveDemo: project.live_demo,
+    };
+  });
+
+  return formattedProjects;
+}
+
 // 7. Route handlers
 const renderIndex = async (req, res) => {
   try {
@@ -93,9 +114,14 @@ const renderIndex = async (req, res) => {
     );
     const formattedWorkExperiences = formatWorkExperiences(workExperiences);
 
+    // Query projects
+    const { rows: projectsDB } = await db.query("SELECT * FROM projects");
+    const formattedProjects = formatProjects(projectsDB);
+
     res.render("index", {
       techStacks,
       workExperiences: formattedWorkExperiences,
+      projects: formattedProjects,
     });
   } catch (error) {
     console.error("Error getting the data from database:", error);
