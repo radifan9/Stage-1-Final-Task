@@ -90,7 +90,7 @@ function formatProjects(projectsDB) {
       title: project.title,
       img: titleAndImg
         ? titleAndImg.img
-        : `https://picsum.photos/seed/${project.id}/300/200`,
+        : `https://picsum.photos/seed/${project.id}/400/200`,
       description: project.description,
       techUsed: project.tech_used,
       githubRepo: project.github_repo,
