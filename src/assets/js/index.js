@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const swiper = new Swiper(".swiper", {
     direction: "horizontal",
     loop: true,
-    slidesPerView: 8,
+    slidesPerView: 9,
     spaceBetween: 30,
 
     // Smooth continuous movement
