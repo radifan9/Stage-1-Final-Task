@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
     speed: 4000, // duration of transition (ms)
     allowTouchMove: true, // ability to grabbing it with mouse
     autoplay: {
-      delay: 1, // delay between init and slide moves
+      delay: 1, // delay between init and slide moves (ms)
       disableOnInteraction: false, // false -> after mouse grab it moves back
       reverseDirection: true, // true -> left to right
     },

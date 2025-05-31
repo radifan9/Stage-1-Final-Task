@@ -3,11 +3,9 @@ import express from "express";
 import { Pool } from "pg";
 import hbs from "hbs";
 import path from "path";
-import { fileURLToPath } from "url";
 import TECH_STACKS from "./src/data/techstacks.js";
-import COMPANY_LOGO from "./src/data/companyLogo.js";
+import COMPANIES_LOGO from "./src/data/companyLogo.js";
 import PROJECT_IMAGE from "./src/data/projectDemo.js";
-import { CLIENT_RENEG_LIMIT } from "tls";
 
 // 2. Constants and Configuration
 const CONFIG = {
@@ -24,10 +22,10 @@ const CONFIG = {
 // 3. App setup
 const app = express();
 const db = new Pool(CONFIG.database);
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = import.meta.filename;
+const __dirname = import.meta.dirname;
 
-// 4. Middleware Setup
+// 4. Middleware Setup & static files
 app.set("view engine", "hbs");
 app.set("views", "src/views");
 app.use("/assets", express.static("src/assets"));
@@ -35,6 +33,7 @@ app.use("/swiper", express.static("node_modules/swiper"));
 hbs.registerPartials(path.join(__dirname, "src/views/partials"));
 
 // 5. Utility functions
+// Get techStacks title and img from contant TECH_STACKS
 function getTechStacks(techStacksDB) {
   const techStacksAndImg = techStacksDB.map((techStackDB) => {
     const { title, img } = TECH_STACKS.find(
@@ -42,6 +41,7 @@ function getTechStacks(techStacksDB) {
     );
     return { title, img };
   });
+
   return techStacksAndImg;
 }
 
@@ -57,17 +57,21 @@ function formatWorkExperiences(workExperiences) {
     });
 
     const formattedStart = dateFormatter.format(start);
-    const formattedEnd = dateFormatter.format(end);
+    // If "undefined" dateFormatter will output Jan 1970
+    const formattedEnd =
+      dateFormatter.format(end) === "Jan 1970"
+        ? "Present"
+        : dateFormatter.format(end);
 
-    // Replace company (just `name`) from COMPANY_LOGO (`name` and `img`)
-    const companyNameAndImg = COMPANY_LOGO.find(
+    // Replace company (just `name`) from COMPANIES_LOGO (`name` and `img`)
+    const companyNameAndImg = COMPANIES_LOGO.find(
       (COMPANY) => COMPANY.name === workExperience.company
     );
 
     return {
       role: workExperience.role,
       start: formattedStart,
-      end: formattedEnd === "Jan 1970" ? "Present" : formattedEnd,
+      end: formattedEnd,
       company: companyNameAndImg,
       responsibilities: workExperience.responsibilities,
       techUsed: workExperience.tech_used,
@@ -80,7 +84,7 @@ function formatWorkExperiences(workExperiences) {
 function formatProjects(projectsDB) {
   const formattedProjects = projectsDB.map((project) => {
     const titleAndImg = PROJECT_IMAGE.find(
-      (DEMO) => DEMO.title === project.title
+      (PROJECT) => PROJECT.title === project.title
     );
 
     return {
