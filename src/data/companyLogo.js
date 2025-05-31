@@ -1,4 +1,4 @@
-const PLACE_LOGO = [
+const COMPANY_LOGO = [
   {
     name: "Airbnb",
     img: "/assets/images/airbnb.png",
@@ -17,4 +17,4 @@ const PLACE_LOGO = [
   },
 ];
 
-export default PLACE_LOGO;
+export default COMPANY_LOGO;

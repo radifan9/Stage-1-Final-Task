@@ -5,7 +5,7 @@ import hbs from "hbs";
 import path from "path";
 import { fileURLToPath } from "url";
 import TECH_STACKS from "./src/data/techstacks.js";
-import PLACE_LOGO from "./src/data/placeLogo.js";
+import COMPANY_LOGO from "./src/data/companyLogo.js";
 import PROJECT_IMAGE from "./src/data/projectDemo.js";
 import { CLIENT_RENEG_LIMIT } from "tls";
 
@@ -34,14 +34,11 @@ app.use("/assets", express.static("src/assets"));
 app.use("/swiper", express.static("node_modules/swiper"));
 hbs.registerPartials(path.join(__dirname, "src/views/partials"));
 
-// 5. Handlebars
-
-// 6. Utility functions
-
+// 5. Utility functions
 function getTechStacks(techStacksDB) {
   const techStacksAndImg = techStacksDB.map((techStackDB) => {
     const { title, img } = TECH_STACKS.find(
-      (tech) => tech.title === techStackDB.title
+      (TECH) => TECH.title === techStackDB.title
     );
     return { title, img };
   });
@@ -62,16 +59,16 @@ function formatWorkExperiences(workExperiences) {
     const formattedStart = dateFormatter.format(start);
     const formattedEnd = dateFormatter.format(end);
 
-    // Replace place (just named)
-    const placeNameAndImg = PLACE_LOGO.find(
-      (logo) => logo.name === workExperience.place
+    // Replace company (just `name`) from COMPANY_LOGO (`name` and `img`)
+    const companyNameAndImg = COMPANY_LOGO.find(
+      (COMPANY) => COMPANY.name === workExperience.company
     );
 
     return {
       role: workExperience.role,
       start: formattedStart,
       end: formattedEnd === "Jan 1970" ? "Present" : formattedEnd,
-      place: placeNameAndImg,
+      company: companyNameAndImg,
       responsibilities: workExperience.responsibilities,
       techUsed: workExperience.tech_used,
     };
@@ -83,7 +80,7 @@ function formatWorkExperiences(workExperiences) {
 function formatProjects(projectsDB) {
   const formattedProjects = projectsDB.map((project) => {
     const titleAndImg = PROJECT_IMAGE.find(
-      (demo) => demo.title === project.title
+      (DEMO) => DEMO.title === project.title
     );
 
     return {
@@ -101,7 +98,7 @@ function formatProjects(projectsDB) {
   return formattedProjects;
 }
 
-// 7. Route handlers
+// 6. Route handlers
 const renderIndex = async (req, res) => {
   try {
     // Query techStacks
@@ -129,10 +126,10 @@ const renderIndex = async (req, res) => {
   }
 };
 
-// 8. Routes
+// 7. Routes
 app.route("/").get(renderIndex);
 
-// 9. Server start
+// 8. Server start
 app.listen(CONFIG.nodePort, () => {
   console.log(`Server running on http://127.0.0.1:${CONFIG.nodePort}`);
 });
