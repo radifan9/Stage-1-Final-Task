@@ -87,11 +87,14 @@ function formatProjects(projectsDB) {
       (PROJECT) => PROJECT.title === project.title
     );
 
+    // If titleAndImg is undefined, replace it with random image
+    const img = titleAndImg
+      ? titleAndImg.img
+      : `https://picsum.photos/seed/${project.id}/400/200`;
+
     return {
       title: project.title,
-      img: titleAndImg
-        ? titleAndImg.img
-        : `https://picsum.photos/seed/${project.id}/400/200`,
+      img: img,
       description: project.description,
       techUsed: project.tech_used,
       githubRepo: project.github_repo,
