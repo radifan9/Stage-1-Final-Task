@@ -1,0 +1,96 @@
+<div class="bg-white rounded-lg shadow overflow-hidden">
+  <table class="w-full">
+    <!-- New Tech Stacks -->
+    <div class="mb-6 m-6 flex items-center">
+      {{#if message.success}}
+        <p
+          class="bg-green-100 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded mb-4"
+        >
+          {{message.success}}
+        </p>
+      {{/if}}
+      <a href="/dashboard/techstacks" class="ml-auto"><button
+          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md border border-blue-600 transition-colors duration-200 flex items-center gap-2"
+        >
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fill-rule="evenodd"
+              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+              clip-rule="evenodd"
+            ></path>
+          </svg>
+          New Tech Stack
+        </button></a>
+
+    </div>
+    <!-- Table Header -->
+    <thead class="bg-gray-100">
+      <tr>
+        <th
+          class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+        >ID</th>
+        <th
+          class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+        >Title</th>
+        <th
+          class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+        >Filename Image</th>
+        <th
+          class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+        >Logo</th>
+        <th
+          class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+        >Action</th>
+      </tr>
+    </thead>
+    <!-- Table Body -->
+    <tbody class="bg-white divide-y divide-gray-200">
+
+      {{#each techStacksDB}}
+        <tr class="hover:bg-gray-50 transition-colors duration-150">
+          <td
+            class="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-900"
+          >{{this.id}}</td>
+          <td
+            class="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-900"
+          >{{this.title}}</td>
+          <td class="px-6 py-4 text-center whitespace-nowrap">
+            <span>{{this.img}}</span>
+          </td>
+          <td class="px-2 py-4 text-center">
+            <div
+              class="inline-flex items-center justify-center p-4 rounded-2xl shadow-xs w-14 h-14 transition-all duration-300 hover:scale-105 hover:shadow-md"
+            >
+              <img
+                class="w-full h-full object-contain"
+                src="/assets/uploads/{{this.img}}"
+                alt="{{this.title}}"
+              />
+            </div>
+          </td>
+          <td class="px-2 py-4 text-center">
+            <div class="flex justify-center items-center space-x-2">
+              <a href="/dashboard/techstacks/{{this.id}}/"><button
+                  class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs transition-colors duration-200"
+                >
+                  Edit
+                </button></a>
+
+              <form onsubmit="return confirmDelete(event)" class="inline">
+                <input type="hidden" name="id" value="{{this.id}}" />
+                <button
+                  class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-colors duration-200"
+                  data-table="techstacks"
+                  data-name="{{this.title}}"
+                >
+                  Delete
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+</div>

@@ -8,21 +8,21 @@
       <!-- NAVBAR -->
       {{>navbar}}
 
-      <main class="max-w-6xl px-4 mx-auto mt-24">
+      <main class="max-w-7xl px-4 mx-auto mt-24">
         <h2 class="text-2xl font-bold mb-12 text-center">
           {{title}}
         </h2>
         <div class="mb-8">
           <form class="space-y-6" action="/login" method="POST">
-            
+
             {{#if message.success}}
-            <div>
-              <p class="text-sm/6 font-medium text-green-500">{{message.success}}</p>
-            </div>
+            <p class="bg-green-100 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded mb-4">
+                {{message.success}}
+            </p>
             {{/if}}
             
             <div>
-              <label for="email" class="block text-sm/6 font-medium text-gray-900">Email address</label>
+              <label for="email" class="block text-sm/6 font-medium text-gray-900">Email address <span class="text-red-500">*</span></label> 
               <div class="mt-2">
                 <input type="email" name="email" id="email" autocomplete="email" required class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6">
               </div>
@@ -30,7 +30,7 @@
 
             <div>
               <div class="flex items-center justify-between">
-                <label for="password" class="block text-sm/6 font-medium text-gray-900">Password</label>
+                <label for="password" class="block text-sm/6 font-medium text-gray-900">Password <span class="text-red-500">*</span></label>
                 
               </div>
               <div class="mt-2">
@@ -39,9 +39,9 @@
             </div>
 
             {{#if message.error}}
-            <div>
-              <p class="text-sm/6 font-medium text-red-500">{{message.error}}</p>
-            </div>
+              <p class="bg-red-100 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded mb-4">
+                {{message.error}}
+              </p>
             {{/if}}
             
 
