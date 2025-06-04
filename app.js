@@ -1,18 +1,24 @@
-// 1. Import statements
+// ===============================================
+// IMPORTS
+// ===============================================
 import express from "express";
 import { Pool } from "pg";
 import hbs from "hbs";
 import path from "path";
-import TECH_STACKS from "./src/data/techstacks.js";
-import COMPANIES_LOGO from "./src/data/companyLogo.js";
-import PROJECT_IMAGE from "./src/data/projectDemo.js";
 import bcrypt from "bcrypt";
 import flash from "express-flash";
 import session from "express-session";
 import morgan from "morgan";
 import multer from "multer";
 
-// 2. Constants and Configuration
+// Data imports, legacy
+import TECH_STACKS from "./src/data/techstacks.js";
+import COMPANIES_LOGO from "./src/data/companyLogo.js";
+import PROJECT_IMAGE from "./src/data/projectDemo.js";
+
+// ===============================================
+// CONFIGURATION & CONSTANTS
+// ===============================================
 const CONFIG = {
   nodePort: 3001,
   database: {
@@ -23,6 +29,8 @@ const CONFIG = {
     database: "b61-final-portfolio",
   },
 };
+
+// Maps route segments to database table names for dynamic CRUD operations
 const tableMap = {
   // route: table name
   techstacks: "tech_stacks",
@@ -30,111 +38,25 @@ const tableMap = {
   projects: "projects",
 };
 
-// 3. App setup
+// ===============================================
+// APP SETUP & INITIALIZATION
+// ===============================================
 const app = express();
 const db = new Pool(CONFIG.database);
 const __filename = import.meta.filename;
 const __dirname = import.meta.dirname;
 
-// 4. Middleware Setup & static files
-app.set("view engine", "hbs");
-app.set("views", "src/views");
-app.use("/assets", express.static("src/assets"));
-app.use("/swiper", express.static("node_modules/swiper"));
-app.use(express.urlencoded({ extended: false })); // Parses form data
-app.use(
-  session({
-    secret: "ruby-chan",
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-      secure: false, // true = sent cookie over https
-      maxAge: 1000 * 60 * 60, // session expires after 1 hour
-    },
-  })
-);
-app.use(flash());
-// Add session to middleware globally through res.locals
-app.use((req, res, next) => {
-  res.locals.userData = {
-    name: req.session.user?.name,
-    email: req.session.user?.email,
-  };
-  next();
-});
-// Create authentication middleware
-const requireAuth = (req, res, next) => {
-  if (req.session.user) {
-    // User is authenticated, proceed
-    return next();
-  } else {
-    // User is not authenticated
-    req.flash("error", "⚠️ Please log in to access dashboard");
-    return res.redirect("/login");
-  }
-};
-app.use(morgan("dev"));
-hbs.registerPartials(path.join(__dirname, "src/views/partials"));
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./src/assets/uploads");
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.fieldname + Date.now() + path.extname(file.originalname));
-  },
-});
-
-const upload = multer({ storage: storage });
-
-// Middleware for preparing data add
-const prepareAddTechStacks = (req, res, next) => {
-  const { title } = req.body;
-
-  // Get table name
-  // Example req.path "/dashboard/techstacks
-  const routeKey = req.path.split("/")[2];
-  const tableName = tableMap[routeKey];
-
-  const query = {
-    text: `INSERT INTO public.${tableName} (title, img) VALUES ($1, $2)`,
-    values: [title, req.file.filename],
-  };
-
-  req.addQuery = query;
-  req.title = title;
-  req.tableName = tableName;
-  next();
-};
-
-// Middleware for preparing data update
-const prepareUpdateTechStacks = (req, res, next) => {
-  const { id } = req.params;
-  const { title, existingImage } = req.body; // exisstingImg from hidden input
-  const img = req.file ? req.file.filename : existingImage;
-
-  // Get table name
-  // Example req.path "/dashboard/techstacks/20/Kotlin"
-  const routeKey = req.path.split("/")[2]; // Gets 'techstacks'
-  const tableName = tableMap[routeKey];
-
-  const query = {
-    text: `UPDATE public.${tableName} SET title = $1, img = $2 WHERE id = $3`,
-    values: [title, img, id],
-  };
-
-  req.updateQuery = query;
-  req.title = title;
-  req.tableName = tableName;
-  next();
-};
-
-// --------- hbs helper
+// ===============================================
+// HANDLEBARS HELPERS
+// ===============================================
 // Equality comparison, return true if equal
 hbs.registerHelper("eq", function (a, b) {
   return a === b;
 });
 
-// 5. Utility functions
+// ===============================================
+// UTILITY FUNCTIONS
+// ===============================================
 // Get techStacks title and img from contant TECH_STACKS
 function getTechStacks(techStacksDB) {
   const techStacksAndImg = techStacksDB.map((techStackDB) => {
@@ -207,7 +129,120 @@ function formatProjects(projectsDB) {
   return formattedProjects;
 }
 
-// 6. Route handlers
+// ===============================================
+// MIDDLEWARE SETUP
+// ===============================================
+// Basic Express configuration
+app.set("view engine", "hbs");
+app.set("views", "src/views");
+app.use("/assets", express.static("src/assets")); // Server static files
+app.use("/swiper", express.static("node_modules/swiper"));
+app.use(express.urlencoded({ extended: false })); // Parse form data
+
+// Session configuration for user authentication
+app.use(
+  session({
+    secret: "ruby-chan",
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      secure: false, // true = sent cookie over https
+      maxAge: 1000 * 60 * 60, // session expires after 1 hour
+    },
+  })
+);
+app.use(flash()); // Flash messages for user feedback
+
+// Global middleware to make user session data available in all templates
+// through res.locals
+app.use((req, res, next) => {
+  res.locals.userData = {
+    name: req.session.user?.name,
+    email: req.session.user?.email,
+  };
+  next();
+});
+
+app.use(morgan("dev")); // HTTP request logging
+hbs.registerPartials(path.join(__dirname, "src/views/partials")); // Register partial templates
+
+// File upload configuration using multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./src/assets/uploads"); // Upload directory
+  },
+  filename: function (req, file, cb) {
+    // Generate unique filename with timestamp
+    cb(null, file.fieldname + Date.now() + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage: storage });
+
+// ===============================================
+// CUSTOM MIDDLEWARE
+// ===============================================
+// Authentication middleware - protects routes that require login
+const requireAuth = (req, res, next) => {
+  if (req.session.user) {
+    // User is authenticated, proceed
+    return next();
+  } else {
+    // User is not authenticated
+    req.flash("error", "⚠️ Please log in to access dashboard");
+    return res.redirect("/login");
+  }
+};
+
+// Middleware for preparing ADD operations - extracts data and builds SQL query
+const prepareAddTechStacks = (req, res, next) => {
+  const { title } = req.body;
+
+  // Get table name dynamically from route
+  // Example req.path "/dashboard/techstacks
+  const routeKey = req.path.split("/")[2];
+  const tableName = tableMap[routeKey];
+
+  const query = {
+    text: `INSERT INTO public.${tableName} (title, img) VALUES ($1, $2)`,
+    values: [title, req.file.filename],
+  };
+
+  // Attach data to request object for next middleware
+  req.addQuery = query;
+  req.title = title;
+  req.tableName = tableName;
+  next();
+};
+
+// Middleware for preparing UPDATE operations - handles existing vs new images
+const prepareUpdateTechStacks = (req, res, next) => {
+  const { id } = req.params;
+  const { title, existingImage } = req.body; // exisstingImg from hidden input
+  const img = req.file ? req.file.filename : existingImage;
+
+  // Get table name dynamically from route
+  // Example req.path "/dashboard/techstacks/20/Kotlin"
+  const routeKey = req.path.split("/")[2]; // Gets 'techstacks'
+  const tableName = tableMap[routeKey];
+
+  const query = {
+    text: `UPDATE public.${tableName} SET title = $1, img = $2 WHERE id = $3`,
+    values: [title, img, id],
+  };
+
+  // Attach data to request object for next middleware
+  req.updateQuery = query;
+  req.title = title;
+  req.tableName = tableName;
+  next();
+};
+
+// ===============================================
+// ROUTE HANDLERS
+// ===============================================
+
+// --- PUBLIC ROUTES ---
 const renderIndex = async (req, res) => {
   try {
     // Query techStacks
@@ -235,6 +270,7 @@ const renderIndex = async (req, res) => {
   }
 };
 
+// --- AUTHENTICATION HANDLERS ---
 const renderRegister = (req, res) => {
   res.render("register", {
     title: "Register",
@@ -268,7 +304,7 @@ const handleRegister = async (req, res) => {
     res.redirect("/login");
   } catch (error) {
     console.log("Registration error:", error);
-    // req.flash("error", "⚠️ An error occurred during registration");
+    req.flash("error", "⚠️ An error occurred during registration");
     res.redirect("/register");
   }
 };
@@ -318,8 +354,7 @@ const handleLogin = async (req, res) => {
   }
 };
 
-// DASHBOARD CRUD
-
+// --- DASHBOARD HANDLERS ---
 const renderDashboard = async (req, res) => {
   try {
     const { rows: techStacksDB } = await db.query(
@@ -340,29 +375,11 @@ const renderDashboard = async (req, res) => {
   }
 };
 
-const handleDelete = async (req, res) => {
-  try {
-    const { id, title } = req.params;
+// --- CRUD HANDLERS ---
 
-    // Example req.path "/dashboard/techstacks/20/Kotlin"
-    const routeKey = req.path.split("/")[2]; // Gets 'techstacks'
-    const tableName = tableMap[routeKey];
-
-    await db.query({
-      text: `DELETE FROM public.${tableName} WHERE id = $1`,
-      values: [id],
-    });
-
-    req.flash("success", `✅ ${title} has been deleted from ${tableName}`);
-    res.status(200).send();
-  } catch (error) {
-    console.log(`Error deleting from ${tableName}: ${error}`);
-    res.status(500).send();
-  }
-};
-
+// Create or add handlers
 const renderTechStacks = (req, res) => {
-  res.render("addTechStacks", {
+  res.render("addEditTechStacks", {
     title: "Add Tech Stacks",
     path: "/dashboard",
   });
@@ -380,6 +397,7 @@ const handleAdd = async (req, res) => {
   res.redirect("/dashboard");
 };
 
+// Read/Edit handlers
 const renderEdit = async (req, res) => {
   const id = parseInt(req.params.id);
 
@@ -392,7 +410,7 @@ const renderEdit = async (req, res) => {
     values: [id],
   });
 
-  res.render("addTechStacks", {
+  res.render("addEditTechStacks", {
     title: "Edit Tech Stacks",
     path: "/dashboard",
     techStack: techStackDB.at(0),
@@ -416,13 +434,42 @@ const handleEdit = async (req, res) => {
   }
 };
 
-// 7. Routes
+// Delete handlers
+const handleDelete = async (req, res) => {
+  try {
+    const { id, title } = req.params;
+
+    // Example req.path "/dashboard/techstacks/20/Kotlin"
+    const routeKey = req.path.split("/")[2]; // Gets 'techstacks'
+    const tableName = tableMap[routeKey];
+
+    await db.query({
+      text: `DELETE FROM public.${tableName} WHERE id = $1`,
+      values: [id],
+    });
+
+    req.flash("success", `✅ ${title} has been deleted from ${tableName}`);
+    res.status(200).send();
+  } catch (error) {
+    console.log(`Error deleting from ${tableName}: ${error}`);
+    res.status(500).send();
+  }
+};
+
+// ===============================================
+// ROUTES
+// ===============================================
+// Public routes - accessible to everyone
 app.route("/").get(renderIndex);
+
+// Authentication routes - for user registration and login
 app.route("/register").get(renderRegister).post(handleRegister);
 app.route("/login").get(renderLogin).post(handleLogin);
+
+// Dashboard routes - protected routes for admin
 app.route("/dashboard/").get(renderDashboard);
 
-// =========== CRUD ROUTE ===========
+// =========== CRUD ROUTES ===========
 app
   .route("/dashboard/techstacks")
   .get(renderTechStacks)
@@ -434,9 +481,13 @@ app
   .delete(handleDelete);
 app.route("/dashboard/experiences/:id/:title").delete(handleDelete);
 app.route("/dashboard/projects/:id/:title").delete(handleDelete);
-// Add requireAuth.renderDashboard, i turn this off biar gampang saat dev
 
-// 8. Server start
+// Note: requireAuth middleware is currently disabled for easier development
+// Add requireAuth to dashboard routes in production
+
+// ===============================================
+// SERVER START
+// ===============================================
 app.listen(CONFIG.nodePort, () => {
   console.log(`Server running on http://127.0.0.1:${CONFIG.nodePort}`);
 });
