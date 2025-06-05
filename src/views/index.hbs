@@ -159,12 +159,12 @@
         <!-- Work Experiences -->
         <h2 class="text-2xl font-bold mb-12">Work Experiences:</h2>
         <div id="workContainer" class="mb-32">
-          {{#each workExperiences}}
+          {{#each experiences}}
             <div
               class="flex gap-9 p-6 rounded-xl shadow-xs justify-start items-start"
             >
               <div>
-                <img class="w-14" src="{{this.company.img}}" alt="Logo {{this.company.name}} company" />
+                <img class="w-14" src="./../assets/uploads/{{this.img}}" alt="Logo {{this.company.name}} company" />
               </div>
               <div class="flex flex-col gap-2">
                 <h3 class="text-lg font-semibold">{{this.role}}</h3>
@@ -193,7 +193,7 @@
             <div class="h-52 bg-gray-100 overflow-hidden">
               <img
                 class="h-full mx-auto"
-                src="{{this.img}}"
+                src="/assets/uploads/{{this.img}}"
                 alt="Demo project {{this.title}}"
               />
             </div>

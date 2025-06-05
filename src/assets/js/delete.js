@@ -7,6 +7,10 @@ async function confirmDelete(event) {
   const tableName = event.submitter.dataset.table;
   const title = event.submitter.dataset.name;
 
+  console.log("--- DELETE JS");
+  console.log(tableName);
+  console.log(title);
+
   // Confirmation dialog
   if (confirm(`Are you sure you want to delete "${title}"?`)) {
     const id = event.target.elements.id.value;

@@ -8,55 +8,7 @@
         alt="Logo SE"
       /></a>
     <ul class="flex gap-x-7 items-center ml-auto">
-      {{#if (eq path "/dashboard")}}
-        <div class="flex gap-x-3">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            width="24px"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-            />
-          </svg>
-          <span class="text-green-600">{{userData.name}}</span>
-          <form onsubmit="return confirmLogout(event)">
-            <input type="hidden" />
-            <button
-              class="rounded-2xl bg-gray-200"
-              type="submit"
-            >logout</button>
-          </form>
-          <form onsubmit="return confirmLogout(event)" class="ml-4">
-            <button
-              type="submit"
-              class="flex items-center gap-2 px-4 py-1.5 text-sm text-red-600 hover:text-white hover:bg-red-600 rounded-full border border-red-600 hover:border-transparent transition-colors duration-200"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
-              Logout
-            </button>
-          </form>
-
-        </div>
-      {{else}}
+      {{#if (eq path "/")}}
         <li><a class="text-gray-500" href="#">Tech Stack</a></li>
         <li><a class="text-gray-500" href="#">Experience</a></li>
         <li><a class="text-gray-500" href="#">Projects</a></li>
@@ -90,6 +42,53 @@
             </svg>
             Download CV</a>
         </li>
+      {{else}}
+        <div class="flex gap-x-3">
+          {{#if userData.name}}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              width="24px"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+              />
+            </svg>
+            <span
+              class="text-green-600 flex items-center"
+            >{{userData.name}}</span>
+
+            <form onsubmit="return confirmLogout(event)" class="ml-4">
+              <button
+                type="submit"
+                class="flex items-center gap-2 px-4 py-1.5 text-sm text-red-600 hover:text-white hover:bg-red-600 rounded-full border border-red-600 hover:border-transparent transition-colors duration-200"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+                Logout
+              </button>
+            </form>
+          {{/if}}
+
+        </div>
+
       {{/if}}
 
       <!-- Moon icon -->
@@ -111,3 +110,4 @@
   </div>
 
 </nav>
+<script src="/assets/js/logout.js"></script>

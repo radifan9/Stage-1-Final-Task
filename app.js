@@ -10,6 +10,7 @@ import flash from "express-flash";
 import session from "express-session";
 import morgan from "morgan";
 import multer from "multer";
+import moment from "moment";
 
 // Data imports, legacy
 import TECH_STACKS from "./src/data/techstacks.js";
@@ -49,9 +50,14 @@ const __dirname = import.meta.dirname;
 // ===============================================
 // HANDLEBARS HELPERS
 // ===============================================
-// Equality comparison, return true if equal
+// Equality comparison, return true if equal, used in path compare
 hbs.registerHelper("eq", function (a, b) {
   return a === b;
+});
+
+// Date format in input
+hbs.registerHelper("formatDate", function (datestring, format) {
+  return moment(datestring).format(format);
 });
 
 // ===============================================
@@ -88,17 +94,19 @@ function formatWorkExperiences(workExperiences) {
         : dateFormatter.format(end);
 
     // Replace company (just `name`) from COMPANIES_LOGO (`name` and `img`)
-    const companyNameAndImg = COMPANIES_LOGO.find(
-      (COMPANY) => COMPANY.name === workExperience.company
-    );
+    // const companyNameAndImg = COMPANIES_LOGO.find(
+    //   (COMPANY) => COMPANY.name === workExperience.company
+    // );
 
     return {
+      id: workExperience.id,
       role: workExperience.role,
       start: formattedStart,
       end: formattedEnd,
-      company: companyNameAndImg,
+      company: workExperience.company,
       responsibilities: workExperience.responsibilities,
       techUsed: workExperience.tech_used,
+      img: workExperience.img,
     };
   });
 
@@ -107,18 +115,21 @@ function formatWorkExperiences(workExperiences) {
 
 function formatProjects(projectsDB) {
   const formattedProjects = projectsDB.map((project) => {
-    const titleAndImg = PROJECT_IMAGE.find(
-      (PROJECT) => PROJECT.title === project.title
-    );
+    // const titleAndImg = PROJECT_IMAGE.find(
+    //   (PROJECT) => PROJECT.title === project.title
+    // );
+
+    console.log(project);
 
     // If titleAndImg is undefined, replace it with random image
-    const img = titleAndImg
-      ? titleAndImg.img
-      : `https://picsum.photos/seed/${project.id}/400/200`;
+    // const img = titleAndImg
+    //   ? titleAndImg.img
+    //   : `https://picsum.photos/seed/${project.id}/400/200`;
 
     return {
+      id: project.id,
       title: project.title,
-      img: img,
+      img: project.img,
       description: project.description,
       techUsed: project.tech_used,
       githubRepo: project.github_repo,
@@ -215,6 +226,35 @@ const prepareAddTechStacks = (req, res, next) => {
   next();
 };
 
+const prepareAddExperiences = (req, res, next) => {
+  const { role, company, startDate, endDate, responsibilities, techUsed } =
+    req.body;
+
+  // Get table name dynamically from route
+  // Example req.path "/dashboard/techstacks
+  const routeKey = req.path.split("/")[2];
+  const tableName = tableMap[routeKey];
+
+  const query = {
+    text: `INSERT INTO public.${tableName} (role, company, start_date, end_date, responsibilities, tech_used, img) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    values: [
+      role,
+      company,
+      startDate,
+      endDate,
+      responsibilities,
+      techUsed,
+      req.file.filename,
+    ],
+  };
+
+  // Attach data to request object for next middleware
+  req.addQuery = query;
+  req.title = role;
+  req.tableName = tableName;
+  next();
+};
+
 // Middleware for preparing UPDATE operations - handles existing vs new images
 const prepareUpdateTechStacks = (req, res, next) => {
   const { id } = req.params;
@@ -229,6 +269,75 @@ const prepareUpdateTechStacks = (req, res, next) => {
   const query = {
     text: `UPDATE public.${tableName} SET title = $1, img = $2 WHERE id = $3`,
     values: [title, img, id],
+  };
+
+  // Attach data to request object for next middleware
+  req.updateQuery = query;
+  req.title = title;
+  req.tableName = tableName;
+  next();
+};
+
+const prepareUpdateExperiences = (req, res, next) => {
+  const { id } = req.params;
+  const {
+    role,
+    company,
+    startDate,
+    endDate,
+    responsibilities,
+    techUsed,
+    existingImage,
+  } = req.body; // exisstingImg from hidden input
+  const img = req.file ? req.file.filename : existingImage;
+
+  // Get table name dynamically from route
+  // Example req.path "/dashboard/techstacks/20/Kotlin"
+  const routeKey = req.path.split("/")[2]; // Gets 'techstacks'
+  const tableName = tableMap[routeKey];
+
+  const query = {
+    text: `UPDATE public.${tableName} SET role = $1, img = $2, company = $3, start_date = $4, end_date = $5, responsibilities = $6, tech_used = $7 WHERE id = $8`,
+    values: [
+      role,
+      img,
+      company,
+      startDate,
+      endDate,
+      responsibilities,
+      techUsed,
+      id,
+    ],
+  };
+
+  // Attach data to request object for next middleware
+  req.updateQuery = query;
+  req.title = role;
+  req.tableName = tableName;
+  next();
+};
+
+const prepareUpdateProjects = (req, res, next) => {
+  const { id } = req.params;
+  const { title, description, techUsed, githubRepo, liveDemo, existingImage } =
+    req.body; // exisstingImg from hidden input
+  const img = req.file ? req.file.filename : existingImage;
+
+  // Get table name dynamically from route
+  // Example req.path "/dashboard/techstacks/20/Kotlin"
+  const routeKey = req.path.split("/")[2]; // Gets 'techstacks'
+  const tableName = tableMap[routeKey];
+
+  const query = {
+    text: `UPDATE public.${tableName} 
+           SET title = $1, 
+               description = $2, 
+               tech_used = $3, 
+               github_repo = $4, 
+               live_demo = $5, 
+               img = $6 
+           WHERE id = $7`,
+    values: [title, description, techUsed, githubRepo, liveDemo, img, id],
   };
 
   // Attach data to request object for next middleware
@@ -261,8 +370,9 @@ const renderIndex = async (req, res) => {
 
     res.render("index", {
       techStacks: techStacksDB,
-      workExperiences: formattedWorkExperiences,
+      experiences: formattedWorkExperiences,
       projects: formattedProjects,
+      path: "/",
     });
   } catch (error) {
     console.error("Error getting the data from database:", error);
@@ -354,6 +464,11 @@ const handleLogin = async (req, res) => {
   }
 };
 
+const logout = (req, res) => {
+  req.session.destroy();
+  res.redirect("/");
+};
+
 // --- DASHBOARD HANDLERS ---
 const renderDashboard = async (req, res) => {
   try {
@@ -361,10 +476,24 @@ const renderDashboard = async (req, res) => {
       "SELECT * FROM tech_stacks ORDER BY id ASC"
     );
 
+    const { rows: experiencesDB } = await db.query(
+      "SELECT * FROM public.work_experiences ORDER BY id ASC"
+    );
+
+    const experiences = formatWorkExperiences(experiencesDB);
+
+    const { rows: projectsDB } = await db.query(
+      "SELECT * FROM public.projects ORDER BY id ASC"
+    );
+
+    const formattedProjects = formatProjects(projectsDB);
+
     res.render("dashboard", {
       title: "dashboard",
       path: "/dashboard",
       techStacksDB,
+      experiences,
+      projects: formattedProjects,
       message: {
         success: req.flash("success"),
         error: req.flash("error"),
@@ -385,6 +514,12 @@ const renderTechStacks = (req, res) => {
   });
 };
 
+const renderExperiences = (req, res) => {
+  res.render("addEditExperiences", {
+    title: "Add Edit Work Experiences",
+  });
+};
+
 const handleAdd = async (req, res) => {
   // Get all the data from prepareAdd
   const title = req.title;
@@ -398,7 +533,7 @@ const handleAdd = async (req, res) => {
 };
 
 // Read/Edit handlers
-const renderEdit = async (req, res) => {
+const renderEditTechStacks = async (req, res) => {
   const id = parseInt(req.params.id);
 
   // Example req.path "/dashboard/techstacks
@@ -414,6 +549,44 @@ const renderEdit = async (req, res) => {
     title: "Edit Tech Stacks",
     path: "/dashboard",
     techStack: techStackDB.at(0),
+  });
+};
+
+const renderEditExperiences = async (req, res) => {
+  const id = parseInt(req.params.id);
+
+  // Example req.path "/dashboard/techstacks
+  const routeKey = req.path.split("/")[2];
+  const tableName = tableMap[routeKey];
+
+  const { rows: experienceDB } = await db.query({
+    text: `SELECT * FROM public.${tableName} WHERE id = $1`,
+    values: [id],
+  });
+
+  res.render("addEditExperiences", {
+    title: "Edit Work Experiences",
+    path: "/dashboard",
+    experience: experienceDB.at(0),
+  });
+};
+
+const renderEditProjects = async (req, res) => {
+  const id = parseInt(req.params.id);
+
+  // Example req.path "/dashboard/techstacks
+  const routeKey = req.path.split("/")[2];
+  const tableName = tableMap[routeKey];
+
+  const { rows: projectDB } = await db.query({
+    text: `SELECT * FROM public.${tableName} WHERE id = $1`,
+    values: [id],
+  });
+
+  const formattedProject = formatProjects(projectDB);
+
+  res.render("addEditProjects", {
+    project: formattedProject.at(0),
   });
 };
 
@@ -457,7 +630,7 @@ const handleDelete = async (req, res) => {
 };
 
 // ===============================================
-// ROUTES
+// ROUTES, Only dashboard is protected by requireAuth
 // ===============================================
 // Public routes - accessible to everyone
 app.route("/").get(renderIndex);
@@ -465,22 +638,40 @@ app.route("/").get(renderIndex);
 // Authentication routes - for user registration and login
 app.route("/register").get(renderRegister).post(handleRegister);
 app.route("/login").get(renderLogin).post(handleLogin);
+app.route("/logout").get(logout);
 
 // Dashboard routes - protected routes for admin
-app.route("/dashboard/").get(renderDashboard);
+app.route("/dashboard/").get(requireAuth, renderDashboard);
 
 // =========== CRUD ROUTES ===========
+// Tech Stacks
 app
   .route("/dashboard/techstacks")
   .get(renderTechStacks)
   .post(upload.single("img"), prepareAddTechStacks, handleAdd);
 app
   .route("/dashboard/techstacks/:id{/:title}")
-  .get(renderEdit)
+  .get(renderEditTechStacks)
   .post(upload.single("img"), prepareUpdateTechStacks, handleEdit)
   .delete(handleDelete);
-app.route("/dashboard/experiences/:id/:title").delete(handleDelete);
-app.route("/dashboard/projects/:id/:title").delete(handleDelete);
+
+// Experiences
+app
+  .route("/dashboard/experiences")
+  .get(renderExperiences)
+  .post(upload.single("img"), prepareAddExperiences, handleAdd);
+
+app
+  .route("/dashboard/experiences/:id{/:title}")
+  .get(renderEditExperiences)
+  .post(upload.single("img"), prepareUpdateExperiences, handleEdit)
+  .delete(handleDelete);
+
+// PROJECT add & delete not implemented
+app
+  .route("/dashboard/projects/:id{/:title}")
+  .get(renderEditProjects)
+  .post(upload.single("img"), prepareUpdateProjects, handleEdit);
 
 // Note: requireAuth middleware is currently disabled for easier development
 // Add requireAuth to dashboard routes in production
