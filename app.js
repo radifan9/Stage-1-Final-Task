@@ -16,12 +16,13 @@ import moment from "moment";
 import TECH_STACKS from "./src/data/techstacks.js";
 import COMPANIES_LOGO from "./src/data/companyLogo.js";
 import PROJECT_IMAGE from "./src/data/projectDemo.js";
+import { CLIENT_RENEG_LIMIT } from "tls";
 
 // ===============================================
 // CONFIGURATION & CONSTANTS
 // ===============================================
 const CONFIG = {
-  nodePort: 3001,
+  nodePort: 3002,
   database: {
     user: "postgres",
     password: "ms11drag00nsql",
@@ -230,6 +231,9 @@ const prepareAddExperiences = (req, res, next) => {
   const { role, company, startDate, endDate, responsibilities, techUsed } =
     req.body;
 
+  // Convert empty strings to Jan 1970 (standard for a lot of date lib)
+  const formattedEndDate = endDate === "" ? "1970-01-01" : endDate;
+
   // Get table name dynamically from route
   // Example req.path "/dashboard/techstacks
   const routeKey = req.path.split("/")[2];
@@ -241,7 +245,7 @@ const prepareAddExperiences = (req, res, next) => {
       role,
       company,
       startDate,
-      endDate,
+      formattedEndDate,
       responsibilities,
       techUsed,
       req.file.filename,
