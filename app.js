@@ -12,16 +12,10 @@ import morgan from "morgan";
 import multer from "multer";
 import moment from "moment";
 
-// Data imports, legacy
-import TECH_STACKS from "./src/data/techstacks.js";
-import COMPANIES_LOGO from "./src/data/companyLogo.js";
-import PROJECT_IMAGE from "./src/data/projectDemo.js";
-
 // ===============================================
 // CONFIGURATION & CONSTANTS
 // ===============================================
 const CONFIG = {
-  nodePort: 3002,
   database: {
     user: "postgres",
     password: "ms11drag00nsql",
@@ -63,18 +57,6 @@ hbs.registerHelper("formatDate", function (datestring, format) {
 // ===============================================
 // UTILITY FUNCTIONS
 // ===============================================
-// Get techStacks title and img from contant TECH_STACKS
-function getTechStacks(techStacksDB) {
-  const techStacksAndImg = techStacksDB.map((techStackDB) => {
-    const { title, img } = TECH_STACKS.find(
-      (TECH) => TECH.title === techStackDB.title
-    );
-    return { title, img };
-  });
-
-  return techStacksAndImg;
-}
-
 function formatWorkExperiences(workExperiences) {
   const formattedWorkExperiences = workExperiences.map((workExperience) => {
     const start = new Date(workExperience.start_date);
@@ -118,8 +100,6 @@ function formatProjects(projectsDB) {
     // const titleAndImg = PROJECT_IMAGE.find(
     //   (PROJECT) => PROJECT.title === project.title
     // );
-
-    console.log(project);
 
     // If titleAndImg is undefined, replace it with random image
     // const img = titleAndImg
@@ -725,9 +705,4 @@ app
 // Note: requireAuth middleware is currently disabled for easier development
 // Add requireAuth to dashboard routes in production
 
-// ===============================================
-// SERVER START
-// ===============================================
-app.listen(CONFIG.nodePort, () => {
-  console.log(`Server running on http://127.0.0.1:${CONFIG.nodePort}`);
-});
+export default app;
