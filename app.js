@@ -16,7 +16,6 @@ import moment from "moment";
 import TECH_STACKS from "./src/data/techstacks.js";
 import COMPANIES_LOGO from "./src/data/companyLogo.js";
 import PROJECT_IMAGE from "./src/data/projectDemo.js";
-import { CLIENT_RENEG_LIMIT } from "tls";
 
 // ===============================================
 // CONFIGURATION & CONSTANTS
@@ -259,10 +258,44 @@ const prepareAddExperiences = (req, res, next) => {
   next();
 };
 
+const prepareAddProjects = (req, res, next) => {
+  const { title, description, techUsed, githubRepo, liveDemo } = req.body;
+
+  // Get table name dynamically from route
+  // Example req.path "/dashboard/techstacks/20/Kotlin"
+  const routeKey = req.path.split("/")[2]; // Gets 'techstacks'
+  const tableName = tableMap[routeKey];
+
+  const query = {
+    text: `
+      INSERT INTO public.${tableName} 
+        (title, description, tech_used, github_repo, live_demo, img)
+      VALUES 
+        ($1, $2, $3, $4, $5, $6)
+      RETURNING *
+    `,
+    values: [
+      title,
+      description,
+      techUsed,
+      githubRepo,
+      liveDemo,
+      req.file.filename,
+    ],
+  };
+
+  // Attach data to request object for next middleware
+  req.addQuery = query;
+  req.title = title;
+  req.tableName = tableName;
+  next();
+};
+
 // Middleware for preparing UPDATE operations - handles existing vs new images
 const prepareUpdateTechStacks = (req, res, next) => {
   const { id } = req.params;
-  const { title, existingImage } = req.body; // exisstingImg from hidden input
+  const { title, description, techUsed, githubRepo, liveDemo, existingImage } =
+    req.body; // exisstingImg from hidden input
   const img = req.file ? req.file.filename : existingImage;
 
   // Get table name dynamically from route
@@ -524,6 +557,12 @@ const renderExperiences = (req, res) => {
   });
 };
 
+const renderProjects = (req, res) => {
+  res.render("addEditProjects", {
+    title: "Add Projects",
+  });
+};
+
 const handleAdd = async (req, res) => {
   // Get all the data from prepareAdd
   const title = req.title;
@@ -645,7 +684,7 @@ app.route("/login").get(renderLogin).post(handleLogin);
 app.route("/logout").get(logout);
 
 // Dashboard routes - protected routes for admin
-app.route("/dashboard/").get(requireAuth, renderDashboard);
+app.route("/dashboard/").get(renderDashboard);
 
 // =========== CRUD ROUTES ===========
 // Tech Stacks
@@ -673,9 +712,15 @@ app
 
 // PROJECT add & delete not implemented
 app
+  .route("/dashboard/projects")
+  .get(renderProjects)
+  .post(upload.single("img"), prepareAddProjects, handleAdd);
+
+app
   .route("/dashboard/projects/:id{/:title}")
   .get(renderEditProjects)
-  .post(upload.single("img"), prepareUpdateProjects, handleEdit);
+  .post(upload.single("img"), prepareUpdateProjects, handleEdit)
+  .delete(handleDelete);
 
 // Note: requireAuth middleware is currently disabled for easier development
 // Add requireAuth to dashboard routes in production
